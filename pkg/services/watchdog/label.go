@@ -18,6 +18,7 @@
 package watchdog
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"time"
@@ -93,13 +94,14 @@ func getTypeName(name string) string {
 	return ""
 }
 
-//NewNodeLabeler returns a new nodeLabeler
+// NewNodeLabeler returns a new nodeLabeler
 func NewNodeLabeler(client v1core.CoreV1Interface, hostname string, labels map[string]string) *nodeLabeler {
 	if len(hostname) == 0 {
 		hostname, _ = os.Hostname()
 	}
 
 	klog.V(2).Infof("Labeler for hostname %s", hostname)
+	defer fmt.Println("NewNodeLabeler done")
 
 	labelMapper := make(map[string]labelFunc)
 	for k, v := range labels {
@@ -118,6 +120,7 @@ func NewNodeLabeler(client v1core.CoreV1Interface, hostname string, labels map[s
 }
 
 func (nl *nodeLabeler) Run() error {
+	fmt.Println("begin nodeLabeler.Run()")
 	err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
 		node, err := nl.client.Nodes().Get(nl.hostName, metav1.GetOptions{})
 		if err != nil {

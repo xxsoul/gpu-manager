@@ -40,7 +40,7 @@ import (
 	// Register allocator controller
 	_ "tkestack.io/gpu-manager/pkg/services/allocator/register"
 	"tkestack.io/gpu-manager/pkg/services/display"
-	"tkestack.io/gpu-manager/pkg/services/virtual-manager"
+	vitrual_manager "tkestack.io/gpu-manager/pkg/services/virtual-manager"
 	"tkestack.io/gpu-manager/pkg/services/volume"
 	"tkestack.io/gpu-manager/pkg/services/watchdog"
 	"tkestack.io/gpu-manager/pkg/types"
@@ -71,7 +71,7 @@ type managerImpl struct {
 	srv          *grpc.Server
 }
 
-//NewManager creates and returns a new managerImpl struct
+// NewManager creates and returns a new managerImpl struct
 func NewManager(cfg *config.Config) Manager {
 	manager := &managerImpl{
 		config:       cfg,
@@ -138,15 +138,18 @@ func (m *managerImpl) Run() error {
 		clientCfg *rest.Config
 	)
 
+	fmt.Println("begin clientcmd.BuildConfigFromFlags")
 	clientCfg, err = clientcmd.BuildConfigFromFlags("", m.config.KubeConfig)
 	if err != nil {
 		return fmt.Errorf("invalid client config: err(%v)", err)
 	}
+	fmt.Println("clientcmd.BuildConfigFromFlags done; begin kubernetes.NewForConfig")
 
 	client, err = kubernetes.NewForConfig(clientCfg)
 	if err != nil {
 		return fmt.Errorf("can not generate client from config: error(%v)", err)
 	}
+	fmt.Println("kubernetes.NewForConfig done; begin containerRuntime.NewContainerRuntimeManager")
 
 	containerRuntimeManager, err := containerRuntime.NewContainerRuntimeManager(
 		m.config.CgroupDriver, m.config.ContainerRuntimeEndpoint, m.config.RequestTimeout)
@@ -154,6 +157,7 @@ func (m *managerImpl) Run() error {
 		klog.Errorf("can't create container runtime manager: %v", err)
 		return err
 	}
+	fmt.Println("containerRuntime.NewContainerRuntimeManager done; Container runtime manager is running")
 	klog.V(2).Infof("Container runtime manager is running")
 
 	watchdog.NewPodCache(client, m.config.Hostname)
@@ -164,6 +168,7 @@ func (m *managerImpl) Run() error {
 		return err
 	}
 
+	fmt.Println("Load container response data")
 	klog.V(2).Infof("Load container response data")
 	responseManager := response.NewResponseManager()
 	if err := responseManager.LoadFromFile(m.config.DevicePluginPath); err != nil {
@@ -172,7 +177,9 @@ func (m *managerImpl) Run() error {
 	}
 
 	m.virtualManager = vitrual_manager.NewVirtualManager(m.config, containerRuntimeManager, responseManager)
+	fmt.Println("begin vitrual_manager.Run")
 	m.virtualManager.Run()
+	fmt.Println("vitrual_manager.Run done")
 
 	treeInitFn := deviceFactory.NewFuncForName(m.config.Driver)
 	tree := treeInitFn(m.config)
@@ -189,6 +196,7 @@ func (m *managerImpl) Run() error {
 	m.displayer = display.NewDisplay(m.config, tree, containerRuntimeManager)
 
 	klog.V(2).Infof("Starting the GRPC server, driver %s, queryPort %d", m.config.Driver, m.config.QueryPort)
+	fmt.Printf("Starting the GRPC server, driver %s, queryPort %d\n", m.config.Driver, m.config.QueryPort)
 	m.setupGRPCService()
 	mux, err := m.setupGRPCGatewayService()
 	if err != nil {
@@ -203,17 +211,20 @@ func (m *managerImpl) Run() error {
 		}
 	}()
 
+	fmt.Println("begin m.runServer()")
 	return m.runServer()
 }
 
 func (m *managerImpl) setupGRPCService() {
-	vcoreServer := newVcoreServer(m)
-	vmemoryServer := newVmemoryServer(m)
+	vcoreServer := newVcoreServer(m)     // v核心服务
+	vmemoryServer := newVmemoryServer(m) // v显存服务
 
 	m.bundleServer[types.VCoreAnnotation] = vcoreServer
 	m.bundleServer[types.VMemoryAnnotation] = vmemoryServer
 
+	fmt.Println("displayapi.RegisterGPUDisplayServer")
 	displayapi.RegisterGPUDisplayServer(m.srv, m)
+	fmt.Println("displayapi.RegisterGPUDisplayServer done")
 }
 
 func (m *managerImpl) setupGRPCGatewayService() (*http.ServeMux, error) {
