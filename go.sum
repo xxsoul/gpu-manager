@@ -224,8 +224,8 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
-github.com/tkestack/go-nvml v0.0.0-20191217064248-7363e630a33e h1:0+K32iJJnNaL/0QxJjfk33QiF+9b9yVkHkuXJWDQPfI=
-github.com/tkestack/go-nvml v0.0.0-20191217064248-7363e630a33e/go.mod h1:6U/NbUmn/gt/d6yR3Qd4Hc9Yu3qyyREnz6hiYz9/qws=
+github.com/tkestack/go-nvml v0.0.0-20210615023610-c7d2f39db60c h1:p1eLz6xo9fGyDNctyJAlimw3yfiIOP8o8s8+vYiQ27g=
+github.com/tkestack/go-nvml v0.0.0-20210615023610-c7d2f39db60c/go.mod h1:6U/NbUmn/gt/d6yR3Qd4Hc9Yu3qyyREnz6hiYz9/qws=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1/go.mod h1:QcJo0QPSfTONNIgpN5RA8prR7fF8nkF6cTWTcNerRO8=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=

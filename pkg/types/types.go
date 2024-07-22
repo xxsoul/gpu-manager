@@ -56,8 +56,9 @@ const (
 )
 
 const (
-	CGROUP_BASE  = "/sys/fs/cgroup/memory"
-	CGROUP_PROCS = "cgroup.procs"
+	CGROUP_BASE    = "/sys/fs/cgroup/memory"
+	CGROUP_V2_BASE = "/sys/fs/cgroup"
+	CGROUP_PROCS   = "cgroup.procs"
 )
 
 type VCudaRequest struct {

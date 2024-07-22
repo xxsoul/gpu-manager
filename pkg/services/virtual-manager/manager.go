@@ -471,6 +471,29 @@ func (vm *VirtualManager) RegisterVDevice(_ context.Context, req *vcudaapi.VDevi
 	return vm.registerVDeviceWithContainerId(podUID, contID)
 }
 
+// GetContainerIdWithPodUid Get container Id by podUid
+func (vm *VirtualManager) GetContainerIdWithPodUid(_ context.Context, req *vcudaapi.VContainerIdRequest) (*vcudaapi.VContainerIdResponse, error) {
+	podNameMap := watchdog.GetActivePods()
+	pod, hit := podNameMap[req.GetPodUid()]
+	if !hit {
+		return nil, fmt.Errorf("pod '%s' not found rom watchdog active pods", req.GetPodUid())
+	}
+
+	// Find the container that requested the vcore
+	index := 0
+	for i, cont := range pod.Spec.Containers {
+		if _, hit := cont.Resources.Requests[types.VCoreAnnotation]; hit {
+			index = i
+			break
+		}
+	}
+
+	return &vcudaapi.VContainerIdResponse{
+		ContainerId:   pod.Status.ContainerStatuses[index].ContainerID,
+		ContainerName: pod.Status.ContainerStatuses[index].Name,
+	}, nil
+}
+
 func (vm *VirtualManager) writePidFile(filename string, contID string) error {
 	klog.V(2).Infof("Write %s", filename)
 	cFileName := C.CString(filename)

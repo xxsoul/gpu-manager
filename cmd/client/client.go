@@ -20,6 +20,8 @@ package main
 import (
 	"context"
 	goflag "flag"
+	"fmt"
+	"os"
 
 	vcudaapi "tkestack.io/gpu-manager/pkg/api/runtime/vcuda"
 	"tkestack.io/gpu-manager/pkg/flags"
@@ -73,8 +75,20 @@ func main() {
 		req.ContainerId = contID
 	}
 
-	_, err = client.RegisterVDevice(ctx, req)
-	if err != nil {
-		klog.Fatalf("fail to get response from manager, error %v", err)
+	if len(busID) > 0 && busID == "GetContainerIdWithPodUid" {
+		res, err := client.GetContainerIdWithPodUid(ctx, &vcudaapi.VContainerIdRequest{
+			PodUid: podUID,
+		})
+		if err != nil {
+			klog.Fatalf("fail to get response from manager, error %v", err)
+		} else {
+			fmt.Print(res.ContainerId)
+			os.Exit(0)
+		}
+	} else {
+		_, err = client.RegisterVDevice(ctx, req)
+		if err != nil {
+			klog.Fatalf("fail to get response from manager, error %v", err)
+		}
 	}
 }

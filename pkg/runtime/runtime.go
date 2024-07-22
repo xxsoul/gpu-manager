@@ -96,6 +96,7 @@ func (m *containerRuntimeManager) GetPidsInContainers(containerID string) ([]int
 	}
 
 	cgroupPath, err := m.getCgroupName(pod, containerID)
+	klog.Infof("containerRuntimeManager getCgroupName result is '%s'", cgroupPath)
 	if err != nil {
 		klog.Errorf("can't get cgroup parent, %v", err)
 		return nil, err
@@ -103,7 +104,9 @@ func (m *containerRuntimeManager) GetPidsInContainers(containerID string) ([]int
 
 	pids := make([]int, 0)
 	baseDir := filepath.Clean(filepath.Join(types.CGROUP_BASE, cgroupPath))
-	filepath.Walk(baseDir, func(path string, info os.FileInfo, err error) error {
+	klog.Infof("containerRuntimeManager baseDir is '%s'", baseDir)
+
+	dirWalkFunc := func(path string, info os.FileInfo, err error) error {
 		if info == nil {
 			return nil
 		}
@@ -117,7 +120,14 @@ func (m *containerRuntimeManager) GetPidsInContainers(containerID string) ([]int
 		}
 
 		return nil
-	})
+	}
+	filepath.Walk(baseDir, dirWalkFunc)
+	if len(pids) == 0 {
+		// 尝试遍历CGOUP v2的目录
+		baseDir = filepath.Clean(filepath.Join(types.CGROUP_V2_BASE, cgroupPath))
+		klog.Infof("containerRuntimeManager redirect to cgroup v2 baseDir is '%s'", baseDir)
+		filepath.Walk(baseDir, dirWalkFunc)
+	}
 
 	return pids, nil
 }

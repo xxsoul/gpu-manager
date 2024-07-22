@@ -4,6 +4,7 @@ package vcuda;
 
 service VCUDAService {
   rpc RegisterVDevice(VDeviceRequest) returns (VDeviceResponse) {}
+  rpc GetContainerIdWithPodUid(VContainerIdRequest) returns (VContainerIdResponse) {}
 }
 
 message VDeviceRequest {
@@ -14,3 +15,12 @@ message VDeviceRequest {
 }
 
 message VDeviceResponse {}
+
+message VContainerIdRequest {
+    string pod_uid = 1;
+}
+
+message VContainerIdResponse{
+    string container_id = 1;
+    string container_name = 2;
+}
